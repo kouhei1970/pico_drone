@@ -109,18 +109,28 @@ u_int8_t dcm2quat(float *dcm, float *q)
     
     u_int8_t idx;
 
+   
+    idx=3;
+
     if (q1>q2){
         if (q1>q3){
             if (q1>q4) idx=0;
         }
     }
-    else if (q2>q3){
-        if (q2>q4)idx=1;
+    if (q2>q1){
+        if (q2>q3){
+            if (q2>q4) idx=1;
+        }
     }
-    else if (q3>q4){
-        idx=2;
-    } 
-    else idx=3;
+    if (q3>q1){
+        if (q3>q2){
+            if (q3>q4) idx=2;
+        }
+    }
+
+
+
+
 
     if (idx==0){
         q[1]=( e12+e21)/4/q1;
