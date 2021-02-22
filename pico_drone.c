@@ -148,7 +148,27 @@ u_int8_t dcm2quat(float *dcm, float *q)
 
 int main() {
     stdio_init_all();
+
     printf("Pico_drone ver 0\n");
+    sleep_ms(1000);
+    printf("Pico_drone ver 1\n");
+    sleep_ms(1000);
+    printf("Pico_drone ver 2\n");
+    sleep_ms(1000);
+    printf("Pico_drone ver 3\n");
+    sleep_ms(1000);
+    printf("Pico_drone ver 4\n");
+    sleep_ms(1000);
+    printf("Pico_drone ver 5\n");
+    sleep_ms(1000);
+    printf("\n");
+
+
+    //for (int i=0;i<10;i++){
+    //    printf("Pico_drone ver 0\n");
+    //}
+    
+    while(true);
     return true;
 }
 
