@@ -39,6 +39,21 @@ u_int8_t euler2dcm(euler,dcm)
     return true;
 }
 
+
+u_int8_t dcm2euler(dcm, euler)
+{
+    phi=atan2(dcm[1][2], dcm[2][2])
+    theta=atan2(-dcm[0][2], sqrt(dcm[1][2]**2 + dcm[2][2]**2))
+    psi=atan2(dcm[0][1], dcm[0][0])
+
+    euler[0]=phi;
+    euler[1]=theta;
+    euler[2]=psi;
+
+    return true;
+}
+
+
 /*
 def euler2dcm(euler):
     phi=euler[0]
