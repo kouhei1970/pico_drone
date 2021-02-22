@@ -5,24 +5,23 @@
 #include "hardware/i2c.h"
 
 
-
-u_int8_t euler2dcm(euler,dcm)
+u_int8_t euler2dcm(float *euler,float *dcm)
 {
-    phi=euler[0]
-    theta=euler[1]
-    psi=euler[2]
+    float phi=euler[0];
+    float theta=euler[1];
+    float psi=euler[2];
     
-    e11= cos(theta)*cos(psi)
-    e12= cos(theta)*sin(psi)
-    e13=-sin(theta)
+    float e11= cos(theta)*cos(psi);
+    float e12= cos(theta)*sin(psi);
+    float e13=-sin(theta);
     
-    e21= sin(phi)*sin(theta)*cos(psi) - cos(phi)*sin(psi)
-    e22= sin(phi)*sin(theta)*sin(psi) + cos(phi)*cos(psi)
-    e23= sin(phi)*cos(theta)
+    float e21= sin(phi)*sin(theta)*cos(psi) - cos(phi)*sin(psi);
+    float e22= sin(phi)*sin(theta)*sin(psi) + cos(phi)*cos(psi);
+    float e23= sin(phi)*cos(theta);
     
-    e31= cos(phi)*sin(theta)*cos(psi) + sin(phi)*sin(psi)
-    e32= cos(phi)*sin(theta)*sin(psi) - sin(phi)*cos(psi)
-    e33= cos(phi)*cos(theta)
+    float e31= cos(phi)*sin(theta)*cos(psi) + sin(phi)*sin(psi);
+    float e32= cos(phi)*sin(theta)*sin(psi) - sin(phi)*cos(psi);
+    float e33= cos(phi)*cos(theta);
     
     dcm[0]=e11;
     dcm[1]=e12;
@@ -40,16 +39,116 @@ u_int8_t euler2dcm(euler,dcm)
 }
 
 
-u_int8_t dcm2euler(dcm, euler)
+u_int8_t dcm2euler(float *dcm, float *euler)
 {
-    phi=atan2(dcm[1][2], dcm[2][2])
-    theta=atan2(-dcm[0][2], sqrt(dcm[1][2]**2 + dcm[2][2]**2))
-    psi=atan2(dcm[0][1], dcm[0][0])
+    float phi=atan2(dcm[1*3+2], dcm[2*3+2]);
+    float theta=atan2(-dcm[0*3+2], sqrt(dcm[1*3+2]*dcm[1*3+2] + dcm[2*3+2]*dcm[2*3+2]));
+    float psi=atan2(dcm[0*3+1], dcm[0*3+0]);
 
     euler[0]=phi;
     euler[1]=theta;
     euler[2]=psi;
 
+    return true;
+}
+
+
+u_int8_t quat2dcm(float *q, float *dcm)
+{
+    float q1=q[0];
+    float q2=q[1];
+    float q3=q[2];
+    float q4=q[3];
+    
+    float e11=   q1*q1 - q2*q2 - q3*q3 + q4*q4;
+    float e12= 2 * (q1*q2 + q3*q4);
+    float e13= 2 * (q1*q3 - q2*q4);
+    
+    float e21= 2 * (q1*q2 - q3*q4);
+    float e22= - q1*q1 + q2*q2 - q3*q3 + q4*q4;
+    float e23= 2 * (q2*q3 + q1*q4);
+    
+    float e31= 2 * (q1*q3 + q2*q4);
+    float e32= 2 * (q2*q3 - q1*q4);
+    float e33= - q1*q1 - q2*q2 + q3*q3 + q4*q4;
+
+    dcm[0]=e11;
+    dcm[1]=e12;
+    dcm[2]=e13;
+
+    dcm[3]=e21;
+    dcm[4]=e22;
+    dcm[5]=e23;
+
+    dcm[6]=e31;
+    dcm[7]=e32;
+    dcm[8]=e33;
+
+    return true;
+}
+
+u_int8_t dcm2quat(float *dcm, float *q)
+{
+    float e11=dcm[0*3+0];
+    float e12=dcm[0*3+1];
+    float e13=dcm[0*3+2];
+    float e21=dcm[1*3+0];
+    float e22=dcm[1*3+1];
+    float e23=dcm[1*3+2];
+    float e31=dcm[2*3+0];
+    float e32=dcm[2*3+1];
+    float e33=dcm[2*3+2];
+    
+    float q1=0.5*sqrt(1 + e11 - e22 - e33);
+    float q2=0.5*sqrt(1 - e11 + e22 - e33);
+    float q3=0.5*sqrt(1 - e11 - e22 + e33);
+    float q4=0.5*sqrt(1 + e11 + e22 + e33);
+    
+    //q=[q1, q2, q3, q4]
+    //idx=q.index(max(q))
+    
+    u_int8_t idx;
+
+    if (q1>q2){
+        if (q1>q3){
+            if (q1>q4) idx=0;
+        }
+    }
+    else if (q2>q3){
+        if (q2>q4)idx=1;
+    }
+    else if (q3>q4){
+        idx=2;
+    } 
+    else idx=3;
+
+    if (idx==0){
+        q[1]=( e12+e21)/4/q1;
+        q[2]=( e13+e31)/4/q1;
+        q[3]=( e23-e32)/4/q1;
+    }
+    else if (idx==1){
+        q[0]=( e12+e21)/4/q2;
+        q[2]=( e23+e32)/4/q2;
+        q[3]=(-e13+e31)/4/q2;
+    }
+    else if (idx==2){
+        q[0]=( e13+e31)/4/q3;
+        q[1]=( e23+e32)/4/q3;
+        q[3]=( e12-e21)/4/q3;
+    }
+    else if (idx==3){
+        q[0]=( e23-e32)/4/q4;
+        q[1]=(-e13+e31)/4/q4;
+        q[2]=( e12+e21)/4/q4;
+    }
+
+    return true;
+}
+
+int main() {
+    stdio_init_all();
+    printf("Pico_drone ver 0\n");
     return true;
 }
 
