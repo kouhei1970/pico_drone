@@ -128,10 +128,6 @@ u_int8_t dcm2quat(float *dcm, float *q)
         }
     }
 
-
-
-
-
     if (idx==0){
         q[1]=( e12+e21)/4/q1;
         q[2]=( e13+e31)/4/q1;
